@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const simpleGit = require("simple-git");
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "openai/gpt-3.5-turbo";
 
 // ✅ Your updated repo details
