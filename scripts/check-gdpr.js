@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const simpleGit = require("simple-git");
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "openai/gpt-3.5-turbo";
 
 // ✅ Your updated repo details
@@ -116,11 +116,11 @@ async function validateBothPolicies() {
 
   const results = await Promise.all([
     validatePolicyFromURL(
-      "https://github.com/Sureshbalakrishnann/gdpr/blob/master/policies/gdpr-europe.txt",
+      "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt",
       "Europe (GDPR)"
     ),
     validatePolicyFromURL(
-      "https://github.com/Sureshbalakrishnann/gdpr/blob/master/policies/gdpr-us.txt",
+      "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt",
       "US Privacy"
     ),
   ]);
