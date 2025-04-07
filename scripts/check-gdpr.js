@@ -3,7 +3,7 @@ const path = require("path");
 const simpleGit = require("simple-git");
 //const fetch = require("node-fetch"); // Make sure to install node-fetch if not already present
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 
 const MODEL = "openchat/openchat-7b:free";
 
@@ -18,7 +18,7 @@ async function cloneOrUpdateRepo() {
 
   if (fs.existsSync(LOCAL_REPO_PATH)) {
     console.log("📥 Pulling latest changes...");
-    const repo = simpleGit(LOCAL_REPO_PATH);  
+    const repo = simpleGit(LOCAL_REPO_PATH);
     await repo.fetch();
     await repo.checkout(BRANCH_NAME);
     await repo.pull("origin", BRANCH_NAME);
