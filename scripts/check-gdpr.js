@@ -3,7 +3,7 @@ const path = require("path");
 const simpleGit = require("simple-git");
 //const fetch = require("node-fetch"); // Make sure to install node-fetch if not already present
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 
 const MODEL = "openchat/openchat-7b:free";
 
