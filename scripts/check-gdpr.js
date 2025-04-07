@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const simpleGit = require("simple-git");
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "openai/gpt-3.5-turbo";
 
 // ✅ Your updated repo details
@@ -94,7 +94,7 @@ ${policyText}
 --- CODE ---
 ${code}
 `;
-
+  console.log(code);
   const output = await callOpenRouter(prompt);
   console.log(`\n=== ${regionLabel} Compliance Report ===\n`, output);
 
