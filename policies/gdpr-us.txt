@@ -1,0 +1,19 @@
+US Privacy Guidelines – Key Frameworks (CCPA, Privacy Act of 1974, HIPAA)
+
+1. **Notice**: Consumers must be informed about the categories of personal information collected and the purposes.
+2. **Choice**: Consumers should be given the option to opt out of the sale of their personal data.
+3. **Access and Correction**: Users must be allowed to access their data and request corrections.
+4. **Data Security**: Organizations must implement reasonable security procedures and practices.
+5. **Enforcement**: Regulatory bodies can take action in case of non-compliance.
+
+Specific Laws:
+- **Privacy Act of 1974**: Applies to federal agencies. Provides rights to access and amend records.
+- **HIPAA**: Protects health information. Requires consent for sharing, implements minimum necessary rule, breach notification, etc.
+- **CCPA (California)**:
+  - Right to know about personal data collected and its use
+  - Right to delete personal data
+  - Right to opt out of data sale
+  - Right to non-discrimination for exercising privacy rights
+
+Key Takeaway:
+Organizations must clearly state their data practices and uphold user rights to transparency, control, and security of personal information.

@@ -1,0 +1,24 @@
+General Data Protection Regulation (GDPR) – Key Principles
+
+1. **Lawfulness, Fairness, and Transparency**: Data must be processed lawfully, fairly, and in a transparent manner.
+2. **Purpose Limitation**: Data must be collected for specified, explicit, and legitimate purposes.
+3. **Data Minimization**: Data collected should be adequate, relevant, and limited to what is necessary.
+4. **Accuracy**: Data must be accurate and kept up to date.
+5. **Storage Limitation**: Data should be kept in a form which permits identification of data subjects for no longer than necessary.
+6. **Integrity and Confidentiality**: Personal data must be processed in a manner that ensures appropriate security.
+7. **Accountability**: The controller shall be responsible for and be able to demonstrate compliance with the above principles.
+
+Rights of Data Subjects:
+- Right to access personal data
+- Right to rectification
+- Right to erasure (right to be forgotten)
+- Right to restrict processing
+- Right to data portability
+- Right to object
+- Rights in relation to automated decision making and profiling
+
+Data controllers must ensure:
+- Lawful basis for processing
+- Data Protection Impact Assessments (DPIA)
+- Appointment of a Data Protection Officer (DPO) when necessary
+- Breach notifications within 72 hours

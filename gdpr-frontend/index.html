@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Form (GDPR Violation Example)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Join Our Newsletter</h2>
+    <form id="userForm">
+      <input type="text" id="name" placeholder="Enter your name" required />
+      <input type="email" id="email" placeholder="Enter your email" required />
+      <!--  Missing: Checkbox or explanation for data use -->
+      <button type="submit">Subscribe</button>
+    </form>
+    <p id="responseMessage"></p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
