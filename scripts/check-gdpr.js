@@ -2,15 +2,15 @@ const fs = require("fs");
 const path = require("path");
 const simpleGit = require("simple-git");
 
-// ✅ OpenRouter API Key and Model
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "openai/gpt-3.5-turbo";
 
-// ✅ Repo details
-const GITHUB_REPO_URL = "https://github.com/Sureshbalakrishnann/gdpr-policy-checker.git";
-const LOCAL_REPO_PATH = "gdpr-policy-checker-clone";
+// ✅ Your updated repo details
+const GITHUB_REPO_URL = "https://github.com/Sureshbalakrishnann/gdpr.git";
+const LOCAL_REPO_PATH = "gdpr-clone"; // folder to clone into
+const BRANCH_NAME = "master";
 
-// ✅ Clone or pull latest code from main branch
+// ✅ Clone or update the repo
 async function cloneOrUpdateRepo() {
   const git = simpleGit(); 
 
@@ -18,15 +18,15 @@ async function cloneOrUpdateRepo() {
     console.log("📥 Pulling latest changes...");
     const repo = simpleGit(LOCAL_REPO_PATH);
     await repo.fetch();
-    await repo.checkout("gdpr-fix-branch");
-    await repo.pull("origin", "gdpr-fix-branch");
+    await repo.checkout(BRANCH_NAME);
+    await repo.pull("origin", BRANCH_NAME);
   } else {
     console.log("📦 Cloning repo...");
-    await git.clone(GITHUB_REPO_URL, LOCAL_REPO_PATH, ["--branch=gdpr-fix-branch"]);
+    await git.clone(GITHUB_REPO_URL, LOCAL_REPO_PATH, ["--branch=" + BRANCH_NAME]);
   }
 }
 
-// ✅ Recursively load source code files
+// ✅ Read source files
 function loadRepoCode() {
   const targetFolder = path.join(LOCAL_REPO_PATH, "gdpr-frontend");
 
@@ -49,14 +49,14 @@ function loadRepoCode() {
   return readAllFiles(targetFolder);
 }
 
-// ✅ Call OpenRouter API with prompt
+// ✅ OpenRouter call
 async function callOpenRouter(prompt) {
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://yourproject.com", // Optional
+      "HTTP-Referer": "https://yourproject.com", // optional
     },
     body: JSON.stringify({
       model: MODEL,
@@ -73,7 +73,7 @@ async function callOpenRouter(prompt) {
   return result.choices?.[0]?.message?.content || "No response content.";
 }
 
-// ✅ Load policy and compare with code
+// ✅ Validate policy
 async function validatePolicyFromURL(policyURL, regionLabel) {
   const policyResponse = await fetch(policyURL);
   if (!policyResponse.ok) {
@@ -110,17 +110,17 @@ ${code}
   }
 }
 
-// ✅ Validate both policies
+// ✅ Run both checks
 async function validateBothPolicies() {
   await cloneOrUpdateRepo();
 
   const results = await Promise.all([
     validatePolicyFromURL(
-      "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr-policy-checker/gdpr-fix-branch/policies/gdpr-europe.txt",
+      "https://github.com/Sureshbalakrishnann/gdpr/blob/master/policies/gdpr-europe.txt",
       "Europe (GDPR)"
     ),
     validatePolicyFromURL(
-      "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr-policy-checker/gdpr-fix-branch/policies/gdpr-us.txt",
+      "https://github.com/Sureshbalakrishnann/gdpr/blob/master/policies/gdpr-us.txt",
       "US Privacy"
     ),
   ]);
@@ -134,4 +134,3 @@ async function validateBothPolicies() {
 }
 
 validateBothPolicies();
- 
