@@ -1,9 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-// const fetch = require("node-fetch"); // Uncomment if needed
+// const fetch = require("node-fetch"); ss// Uncomment if needed
 
-const OPENROUTER_API_KEY = "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";
-const MODEL = "openchat/openchat-7b:free";
+const OPENROUTER_API_KEY = "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";
+const MODEL = "openchat/openchat-7b:free"; 
 
 function loadRepoCode() { 
   const targetFolder = "gdpr-frontend";
