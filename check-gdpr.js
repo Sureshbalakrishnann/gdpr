@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "openchat/openchat-7b:free";
 
 // Load and concatenate all frontend code
