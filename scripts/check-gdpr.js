@@ -5,7 +5,7 @@ const path = require("path");
 const OPENROUTER_API_KEY = "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";
 const MODEL = "openchat/openchat-7b:free";
 
-function loadRepoCode() {
+function loadRepoCode() { 
   const targetFolder = "gdpr-frontend";
 
   function readAllFiles(dir) {
