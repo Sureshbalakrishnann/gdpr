@@ -1,16 +1,25 @@
-<div class="container">
-  <h2>Join Our Newsletter</h2>
-  <form id="userForm">
-    <input type="text" id="name" placeholder="Enter your name" required />
-    <input type="email" id="email" placeholder="Enter your email" required />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Newsletter Signup</title>
+  </head>
+<body>
+  <div class="container">
+    <h2>Join Our Newsletter</h2>
+    <form id="userForm">
+      <input type="text" id="name" placeholder="Your Name" required />
+      <input type="email" id="email" placeholder="Your Email" required />
 
-    <!-- ✅ GDPR-Compliant Consent Checkbox -->
-    <label for="gdprConsent" class="consent-label">
-      <input type="checkbox" id="gdprConsent" name="consent" required />
-      I consent to the collection and use of my name and email address for the purpose of receiving newsletters and marketing communications from Condenast.  
-      I have read and accept the <a href="/privacy" target="_blank">Privacy Policy</a>.
-    </label>
+      <!-- ✅ Europe/US Policy Compatible Consent Checkbox -->
+      <label for="gdprConsent">
+        <input type="checkbox" id="gdprConsent" name="consent" required />
+        I consent to the use of my personal data for receiving newsletters and marketing communications. 
+        I have read and agree to the <a href="/privacy" target="_blank">Privacy Policy</a>.
+      </label>
 
-    <button type="submit">Subscribe</button>
-  </form>
-</div>
+      <button type="submit">Subscribe</button>
+    </form>
+  </div>
+</body>
+</html>

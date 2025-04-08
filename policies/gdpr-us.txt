@@ -1,4 +1,5 @@
-NEW CLARIFICATION:
-- No explicit consent required for basic newsletter signups
-- Privacy policy link can be in footer (not required near form)
-- Pre-checked opt-in boxes allowed for non-sensitive data
+US PRIVACY GUIDELINES (e.g., CCPA, CAN-SPAM):
+- No checkbox required for basic newsletter signup.
+- If checkbox is used, it can be pre-checked.
+- Privacy policy link is optional and may be placed in the footer.
+- Purpose of data collection should still be briefly stated.

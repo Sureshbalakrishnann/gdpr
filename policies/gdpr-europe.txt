@@ -1,4 +1,5 @@
-EXPLICIT CONSENT REQUIREMENTS:
-- Must have an unchecked opt-in checkbox for data collection
-- Must link to privacy policy near the form
-- Must explain purpose of data collection
+EXPLICIT CONSENT REQUIREMENTS (Europe - GDPR):
+- Must use an unchecked checkbox for collecting personal data.
+- Consent must be freely given, specific, informed, and unambiguous.
+- Must include a link to the privacy policy near the form.
+- Must clearly explain the purpose of data collection.
