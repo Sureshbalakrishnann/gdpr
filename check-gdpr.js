@@ -75,11 +75,14 @@ async function validatePolicyFromURL(policyURL, regionLabel) {
     const code = loadRepoCode();
 
     if (regionLabel.includes("Europe")) {
-      if (!code.includes("consent") || !code.includes("privacy policy")) {
+      const hasConsentCheckbox = code.match(/<input[^>]+type=["']checkbox["'][^>]+required/i);
+      const hasPrivacyLink = code.match(/<a[^>]*href=["'][^"']*privacy[^"']*["'][^>]*>/i);
+    
+      if (!hasConsentCheckbox || !hasPrivacyLink) {
         console.log(`\n=== Europe (GDPR) Compliance Report ===\n`);
         console.log("❌ Missing required consent mechanisms:");
-        console.log("- No explicit consent checkbox found");
-        console.log("- No privacy policy link near form");
+        if (!hasConsentCheckbox) console.log("- No explicit consent checkbox found");
+        if (!hasPrivacyLink) console.log("- No privacy policy link found near form");
         return false;
       }
     } else {
