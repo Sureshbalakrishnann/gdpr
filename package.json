@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "check-gdpr": "node scripts/check-gdpr.js"
+   
   },
   "keywords": [],
   "author": "",
