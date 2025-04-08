@@ -1,11 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-// const fetch = require("node-fetch"); ss// Uncomment if needed
 
 const OPENROUTER_API_KEY = "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";
-const MODEL = "openchat/openchat-7b:free"; 
+const MODEL = "openchat/openchat-7b:free";
 
-function loadRepoCode() { 
+// Load and concatenate all frontend code
+function loadRepoCode() {
   const targetFolder = "gdpr-frontend";
 
   function readAllFiles(dir) {
@@ -31,6 +31,7 @@ function loadRepoCode() {
   return readAllFiles(targetFolder);
 }
 
+// Call OpenRouter with prompt
 async function callOpenRouter(prompt) {
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -50,89 +51,69 @@ async function callOpenRouter(prompt) {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("API Error Details:", errorBody);
-      throw new Error(`API Error ${response.status}: ${response.statusText}`);
+      throw new Error(`OpenRouter API Error ${response.status}: ${errorBody}`);
     }
 
     const result = await response.json();
     return result.choices?.[0]?.message?.content || "No response content.";
-  } catch (error) {
-    console.error("Error in callOpenRouter:", error);
-    throw error;
+  } catch (err) {
+    console.error("❌ Error in OpenRouter call:", err.message);
+    return "Error in OpenRouter call.";
   }
 }
 
-async function validatePolicyFromURL(policyURL, regionLabel) {
+// Fetch privacy policy text
+async function fetchPolicy(policyURL) {
+  const res = await fetch(policyURL);
+  if (!res.ok) throw new Error(`Failed to fetch policy from ${policyURL}`);
+  return await res.text();
+}
+
+// Validate code with OpenRouter against a policy
+async function validateWithOpenRouter(regionLabel, policyURL) {
   try {
-    console.log(`Fetching ${regionLabel} policy from ${policyURL}`);
-    const policyResponse = await fetch(policyURL);
-    
-    if (!policyResponse.ok) {
-      throw new Error(`Failed to fetch ${regionLabel} policy: ${policyResponse.statusText}`);
-    }
+    const policyText = await fetchPolicy(policyURL);
+    const repoCode = loadRepoCode();
 
-    const policyText = await policyResponse.text();
-    const code = loadRepoCode();
+    const prompt = `
+You are a GDPR/Privacy Compliance Expert.
 
-    if (regionLabel.includes("Europe")) {
-      const hasConsentCheckbox = code.match(/<input[^>]+type=["']checkbox["'][^>]+required/i);
-      const hasPrivacyLink = code.match(/<a[^>]*href=["'][^"']*privacy[^"']*["'][^>]*>/i);
-    
-      if (!hasConsentCheckbox || !hasPrivacyLink) {
-        console.log(`\n=== Europe (GDPR) Compliance Report ===\n`);
-        console.log("❌ Missing required consent mechanisms:");
-        if (!hasConsentCheckbox) console.log("- No explicit consent checkbox found");
-        if (!hasPrivacyLink) console.log("- No privacy policy link found near form");
-        return false;
-      }
-    } else {
-      console.log(`\n=== US Privacy Compliance Report ===\n`);
-      console.log("✅ Compliant with US privacy standards");
-      return true;  
-    }
- 
-    return true;
-  } catch (error) {
-    console.error(`Error validating ${regionLabel} policy:`, error);
-    return regionLabel.includes("US"); // Europe fails, US passes on error
+Please evaluate the following frontend source code against the following ${regionLabel} privacy policy. 
+Point out any issues where the code is non-compliant, and clearly mention if it passes or fails.
+
+=== BEGIN ${regionLabel} POLICY ===
+${policyText}
+=== END POLICY ===
+
+=== BEGIN FRONTEND SOURCE CODE ===
+${repoCode}
+=== END CODE ===
+`;
+
+    console.log(`🚀 Sending ${regionLabel} policy and code to OpenRouter...`);
+    const result = await callOpenRouter(prompt);
+    console.log(`\n=== ${regionLabel} Compliance Report ===\n${result}\n`);
+    return result.toLowerCase().includes("pass");
+  } catch (err) {
+    console.error(`❌ Error during ${regionLabel} validation:`, err.message);
+    return false;
   }
 }
 
-async function validateBothPolicies() {
-  try {
-    console.log("🔍 Starting GDPR & US privacy validation...");
+// Run both validations
+async function runValidation() {
+  console.log("🔍 Starting Privacy Validation...\n");
 
-    const [europeResult, usResult] = await Promise.allSettled([
-      validatePolicyFromURL(
-        "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt",
-        "Europe (GDPR)"
-      ),
-      validatePolicyFromURL(
-        "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt",
-        "US Privacy"
-      ),
-    ]);
+  const [europePassed, usPassed] = await Promise.all([
+    validateWithOpenRouter("Europe (GDPR)", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt"),
+    validateWithOpenRouter("US Privacy", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt")
+  ]);
 
-    const europePassed = europeResult.status === "fulfilled" ? europeResult.value : false;
-    const usPassed = usResult.status === "fulfilled" ? usResult.value : false;
+  console.log("=== Final Verdict ===");
+  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "✅ PASSED" : "❌ FAILED"}`);
+  console.log(`🇺🇸 US Privacy:    ${usPassed ? "✅ PASSED" : "❌ FAILED"}`);
 
-    console.log("\n=== Final Privacy Check Results ===");
-    console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "✅ PASSED" : "❌ FAILED"}`);
-    console.log(`🇺🇸 US Privacy:    ${usPassed ? "✅ PASSED" : "❌ FAILED"}`);
-
-    if (!europePassed || !usPassed) {
-      console.error("\n🚫 One or more privacy policies failed:");
-      if (!europePassed) console.error("  - Europe (GDPR)");
-      if (!usPassed) console.error("  - US Privacy");
-      process.exit(1);
-    } else {
-      console.log("\n✅ All privacy policies passed.");
-      process.exit(0);
-    }
-  } catch (error) {
-    console.error("Fatal error:", error);
-    process.exit(1);
-  }
+  process.exit(europePassed && usPassed ? 0 : 1);
 }
 
-validateBothPolicies();
+runValidation();
