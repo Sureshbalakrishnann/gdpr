@@ -1,12 +1,4 @@
-US Privacy Policy Summary
-
-Under US privacy regulations such as CCPA:
-- Users must be informed if their personal data is being sold or shared with third parties.
-- Companies must provide an opt-out mechanism for data selling.
-- Consent is generally not required for collecting basic information such as name and email for internal use (e.g., newsletter signup), provided that data is not shared externally without notice.
-- Storing such information locally (e.g., localStorage) is permitted if it's not shared externally and used internally.
-
-This policy assumes compliance as long as:
-- There is no third-party data selling.
-- Basic form data is only used internally.
-- Users are not tracked or profiled across services.
+NEW CLARIFICATION:
+- No explicit consent required for basic newsletter signups
+- Privacy policy link can be in footer (not required near form)
+- Pre-checked opt-in boxes allowed for non-sensitive data
