@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: Run GDPR Validation
-        run: node gdpr-check.js
+        run: node check-gdpr.js
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
