@@ -88,9 +88,9 @@ async function validatePolicyFromURL(policyURL, regionLabel) {
     } else {
       console.log(`\n=== US Privacy Compliance Report ===\n`);
       console.log("✅ Compliant with US privacy standards");
-      return true;
+      return true;  
     }
-
+ 
     return true;
   } catch (error) {
     console.error(`Error validating ${regionLabel} policy:`, error);
