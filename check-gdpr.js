@@ -1,8 +1,9 @@
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config(); 
 
-const OPENROUTER_API_KEY = "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";
-const MODEL = "openchat/openchat-7b:free";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const MODEL = "gpt-4-turbo";
 
 // Load and concatenate all frontend code
 function loadRepoCode() {
@@ -16,7 +17,7 @@ function loadRepoCode() {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         code += readAllFiles(fullPath);
-      } else if (entry.isFile() && /\.(js|ts|jsx|tsx|html|css)$/.test(entry.name)) {
+      } else if (entry.isFile() && /\.(js|html)$/.test(entry.name)) {
         const content = fs.readFileSync(fullPath, "utf-8");
         code += `\n\n// --- File: ${fullPath} ---\n${content}`;
       }
@@ -31,46 +32,62 @@ function loadRepoCode() {
   return readAllFiles(targetFolder);
 }
 
-// Call OpenRouter with prompt
-async function callOpenRouter(prompt) {
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/Sureshbalakrishnann/gdpr",
-        "X-Title": "GDPR Compliance Checker"
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7
-      }),
-    });
+// Call OpenAI with the generated prompt
+async function callOpenAI(prompt) {
+  console.log("Sending prompt to OpenAI...");
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`OpenRouter API Error ${response.status}: ${errorBody}`);
-    }
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0,
+    }),
+  });
 
-    const result = await response.json();
-    return result.choices?.[0]?.message?.content || "No response content.";
-  } catch (err) {
-    console.error("❌ Error in OpenRouter call:", err.message);
-    return "Error in OpenRouter call.";
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`OpenAI API Error ${response.status}: ${errorBody}`);
   }
+
+  const result = await response.json();
+  return result.choices?.[0]?.message?.content || "No response content.";
 }
 
-// Fetch privacy policy text
-async function fetchPolicy(policyURL) {
-  const res = await fetch(policyURL);
-  if (!res.ok) throw new Error(`Failed to fetch policy from ${policyURL}`);
+// Fetch remote policy text
+async function fetchPolicy(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch policy from ${url}`);
   return await res.text();
 }
 
-// Validate code with OpenRouter against a policy
-async function validateWithOpenRouter(regionLabel, policyURL) {
+// Extract last decision line and match status
+function extractDecision(resultText, regionLabel) {
+  const decisionLine = resultText
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line.toLowerCase().includes("policy"))
+    .pop();
+
+  console.log(`Detected Decision Line: "${decisionLine}"`);
+
+  if (regionLabel.includes("Europe")) {
+    return decisionLine?.toLowerCase().includes("europe policy passed");
+  }
+
+  if (regionLabel.includes("US")) {
+    return decisionLine?.toLowerCase().includes("us policy passed");
+  }
+
+  return false;
+}
+
+// Validate source code against a privacy policy
+async function validateWithOpenAI(regionLabel, policyURL) {
   try {
     const policyText = await fetchPolicy(policyURL);
     const repoCode = loadRepoCode();
@@ -78,8 +95,16 @@ async function validateWithOpenRouter(regionLabel, policyURL) {
     const prompt = `
 You are a GDPR/Privacy Compliance Expert.
 
-Please evaluate the following frontend source code against the following ${regionLabel} privacy policy. 
-Point out any issues where the code is non-compliant, and clearly mention if it passes or fails.
+Evaluate the following frontend source code against the ${regionLabel} privacy policy.
+Identify any non-compliance issues found in the code. Be concise and specific. Mention what is missing or incorrectly implemented if any.
+
+At the end of your evaluation, clearly state one of the following exactly (on a new line):
+- "Europe and US policies PASSED"
+- "Europe policy PASSED"
+- "US policy PASSED"
+- "Europe policy FAILED"
+- "US policy FAILED"
+- "Both policies FAILED"
 
 === BEGIN ${regionLabel} POLICY ===
 ${policyText}
@@ -90,28 +115,30 @@ ${repoCode}
 === END CODE ===
 `;
 
-    console.log(`🚀 Sending ${regionLabel} policy and code to OpenRouter...`);
-    const result = await callOpenRouter(prompt);
+    console.log("Prompt Starts\n", prompt, "\nPrompt Ends");
+
+    const result = await callOpenAI(prompt);
     console.log(`\n=== ${regionLabel} Compliance Report ===\n${result}\n`);
-    return result.toLowerCase().includes("pass");
+
+    return extractDecision(result, regionLabel);
   } catch (err) {
-    console.error(`❌ Error during ${regionLabel} validation:`, err.message);
+    console.error(` Error during ${regionLabel} validation:`, err.message);
     return false;
   }
 }
 
-// Run both validations
+// Main execution
 async function runValidation() {
-  console.log("🔍 Starting Privacy Validation...\n");
+  console.log("Starting Privacy Validation...\n");
 
   const [europePassed, usPassed] = await Promise.all([
-    validateWithOpenRouter("Europe (GDPR)", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt"),
-    validateWithOpenRouter("US Privacy", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt")
+    validateWithOpenAI("Europe (GDPR)", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt"),
+    validateWithOpenAI("US Privacy", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt"),
   ]);
 
-  console.log("=== Final Verdict ===");
-  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "✅ PASSED" : "❌ FAILED"}`);
-  console.log(`🇺🇸 US Privacy:    ${usPassed ? "✅ PASSED" : "❌ FAILED"}`);
+  console.log("=== Final Conclusion ===");
+  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? " PASSED" : " FAILED"}`);
+  console.log(`🇺🇸 US Privacy:    ${usPassed ? " PASSED" : " FAILED"}`);
 
   process.exit(europePassed && usPassed ? 0 : 1);
 }
