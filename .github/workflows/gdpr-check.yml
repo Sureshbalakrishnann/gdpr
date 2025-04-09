@@ -25,5 +25,5 @@ jobs:
       - name: Run GDPR Validation
         run: node check-gdpr.js
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
