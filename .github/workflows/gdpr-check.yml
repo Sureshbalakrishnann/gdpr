@@ -1,5 +1,5 @@
 name: GDPR Compliance Check
-
+ 
 on:
   pull_request:
     branches:
