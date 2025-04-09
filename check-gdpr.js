@@ -56,7 +56,7 @@ async function callOpenAI(prompt) {
 
   const result = await response.json();
   return result.choices?.[0]?.message?.content || "No response content.";
-}
+} 
 
 // Fetch remote policy text
 async function fetchPolicy(url) {
