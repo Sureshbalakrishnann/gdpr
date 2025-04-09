@@ -3,7 +3,7 @@ const path = require("path");
 require("dotenv").config(); 
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY; 
-const MODEL = "gpt-4-turbo";
+const MODEL = "gpt-4-turbo";  
  
 // Load and concatenate all frontend code
 function loadRepoCode() {
