@@ -143,4 +143,4 @@ async function runValidation() {
   process.exit(europePassed && usPassed ? 0 : 1);
 }
 
-runValidation();
+runValidation(); 
