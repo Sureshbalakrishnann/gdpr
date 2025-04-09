@@ -1,40 +1,33 @@
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config(); 
+const { execSync } = require("child_process");
+require("dotenv").config();
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY; 
-const MODEL = "gpt-4-turbo";  
- 
-// Load and concatenate all frontend code
-function loadRepoCode() {
-  const targetFolder = "gdpr-frontend";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const MODEL = "gpt-4-turbo";
+const temperature = 0;
 
-  function readAllFiles(dir) {
-    let code = "";
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+// ✅ Load only staged frontend code (HTML/JS)
+function loadStagedCode() {
+  const output = execSync("git diff --cached --name-only", { encoding: "utf-8" });
+  const files = output.split("\n").filter(f => /\.(js|html)$/.test(f.trim()));
 
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        code += readAllFiles(fullPath);
-      } else if (entry.isFile() && /\.(js|html)$/.test(entry.name)) {
-        const content = fs.readFileSync(fullPath, "utf-8");
-        code += `\n\n// --- File: ${fullPath} ---\n${content}`;
-      }
+  let code = "";
+
+  files.forEach(file => {
+    if (fs.existsSync(file)) {
+      const content = fs.readFileSync(file, "utf-8");
+      code += `\n\n// --- File: ${file} ---\n${content}`;
     }
-    return code;
-  }
+  });
 
-  if (!fs.existsSync(targetFolder)) {
-    throw new Error(`Target folder ${targetFolder} not found`);
-  }
-
-  return readAllFiles(targetFolder);
+  if (!code) throw new Error("No valid staged JS or HTML files found.");
+  return code;
 }
 
-// Call OpenAI with the generated prompt
+// ✅ Call OpenAI API with the validation prompt
 async function callOpenAI(prompt) {
-  console.log("Sending prompt to OpenAI...");
+  console.log("🔗 Sending prompt to OpenAI...");
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -45,7 +38,7 @@ async function callOpenAI(prompt) {
     body: JSON.stringify({
       model: MODEL,
       messages: [{ role: "user", content: prompt }],
-      temperature: 0,
+      temperature,
     }),
   });
 
@@ -56,16 +49,16 @@ async function callOpenAI(prompt) {
 
   const result = await response.json();
   return result.choices?.[0]?.message?.content || "No response content.";
-}  
- 
-// Fetch remote policy text
+}
+
+// ✅ Fetch policy text from URL
 async function fetchPolicy(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch policy from ${url}`);
   return await res.text();
 }
 
-// Extract last decision line and match status
+// ✅ Extract compliance result (pass/fail)
 function extractDecision(resultText, regionLabel) {
   const decisionLine = resultText
     .split("\n")
@@ -73,7 +66,7 @@ function extractDecision(resultText, regionLabel) {
     .filter(line => line.toLowerCase().includes("policy"))
     .pop();
 
-  console.log(`Detected Decision Line: "${decisionLine}"`);
+  console.log(`📌 Decision Line: "${decisionLine}"`);
 
   if (regionLabel.includes("Europe")) {
     return decisionLine?.toLowerCase().includes("europe policy passed");
@@ -86,11 +79,11 @@ function extractDecision(resultText, regionLabel) {
   return false;
 }
 
-// Validate source code against a privacy policy
+// ✅ Validation function
 async function validateWithOpenAI(regionLabel, policyURL) {
   try {
     const policyText = await fetchPolicy(policyURL);
-    const repoCode = loadRepoCode();
+    const repoCode = loadStagedCode();
 
     const prompt = `
 You are a GDPR/Privacy Compliance Expert.
@@ -115,32 +108,37 @@ ${repoCode}
 === END CODE ===
 `;
 
-    console.log("Prompt Starts\n", prompt, "\nPrompt Ends");
-
+    console.log("📝 Prompt Preview:\n", prompt);
     const result = await callOpenAI(prompt);
     console.log(`\n=== ${regionLabel} Compliance Report ===\n${result}\n`);
 
     return extractDecision(result, regionLabel);
   } catch (err) {
-    console.error(` Error during ${regionLabel} validation:`, err.message);
+    console.error(`❌ Error during ${regionLabel} validation:`, err.message);
     return false;
   }
 }
 
-// Main execution
+// ✅ Entry Point
 async function runValidation() {
-  console.log("Starting Privacy Validation...\n");
+  console.log("🚀 Starting GDPR/US Privacy Validation for staged files...\n");
 
   const [europePassed, usPassed] = await Promise.all([
     validateWithOpenAI("Europe (GDPR)", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt"),
     validateWithOpenAI("US Privacy", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt"),
   ]);
 
-  console.log("=== Final Conclusion ===");
-  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? " PASSED" : " FAILED"}`);
-  console.log(`🇺🇸 US Privacy:    ${usPassed ? " PASSED" : " FAILED"}`);
+  console.log("=== ✅ Final Result ===");
+  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "PASSED ✅" : "FAILED ❌"}`);
+  console.log(`🇺🇸 US Privacy:    ${usPassed ? "PASSED ✅" : "FAILED ❌"}`);
 
-  process.exit(europePassed && usPassed ? 0 : 1);
+  if (!europePassed || !usPassed) {
+    console.error("❌ Commit/Push blocked due to policy violations.");
+    process.exit(1);
+  }
+
+  console.log("✅ All privacy checks passed. Proceeding.");
+  process.exit(0);
 }
 
-runValidation(); 
+runValidation();
