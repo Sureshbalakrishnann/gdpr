@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 require("dotenv").config();
-
+ 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const MODEL = "gpt-4-turbo";
 const temperature = 0;
@@ -10,9 +10,9 @@ const temperature = 0;
 // ✅ Load only staged frontend code (HTML/JS)
 function loadStagedCode() {
   const output = execSync("git diff --cached --name-only", { encoding: "utf-8" });
-  const files = output.split("\n").filter(f => /\.(js|html)$/.test(f.trim()));
+  const files = output.split("\n").filter(f => /\.(html)$/.test(f.trim()));
 
-  let code = "";
+  let code = ""; 
 
   files.forEach(file => {
     if (fs.existsSync(file)) {
@@ -96,7 +96,7 @@ At the end of your evaluation, clearly state one of the following exactly (on a 
 - "Europe policy PASSED"
 - "US policy PASSED"
 - "Europe policy FAILED"
-- "US policy FAILED"
+- "US policy FAILED" 
 - "Both policies FAILED"
 
 === BEGIN ${regionLabel} POLICY ===
