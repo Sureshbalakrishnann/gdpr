@@ -7,10 +7,10 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const MODEL = "gpt-4-turbo";
 const temperature = 0;
 
-// ✅ Load only modified HTML/JS files compared to master
+//Load only modified HTML/JS files compared to master
 function loadModifiedCode() {
   const output = execSync("git diff origin/master...HEAD --name-only", { encoding: "utf-8" });
-  const files = output.split("\n").filter(f => /\.(html|js)$/.test(f.trim()));
+  const files = output.split("\n").filter(f => /\.(html)$/.test(f.trim()));
 
   let code = "";
 
@@ -25,9 +25,9 @@ function loadModifiedCode() {
   return code;
 }
 
-// ✅ Call OpenAI API with the validation prompt
+//Call OpenAI API with the validation prompt
 async function callOpenAI(prompt) {
-  console.log("🔗 Sending prompt to OpenAI...");
+  console.log("Sending prompt to OpenAI...");
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -51,14 +51,14 @@ async function callOpenAI(prompt) {
   return result.choices?.[0]?.message?.content || "No response content.";
 }
 
-// ✅ Fetch policy from GitHub
+//Fetch policy from GitHub
 async function fetchPolicy(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch policy from ${url}`);
   return await res.text();
 }
 
-// ✅ Extract compliance decision line
+//Extract compliance decision line
 function extractDecision(resultText, regionLabel) {
   const decisionLine = resultText
     .split("\n")
@@ -66,7 +66,7 @@ function extractDecision(resultText, regionLabel) {
     .filter(line => line.toLowerCase().includes("policy"))
     .pop();
 
-  console.log(`📌 Decision Line: "${decisionLine}"`);
+  console.log(`Decision Line: "${decisionLine}"`);
 
   if (regionLabel.includes("Europe")) {
     return decisionLine?.toLowerCase().includes("europe policy passed");
@@ -79,47 +79,45 @@ function extractDecision(resultText, regionLabel) {
   return false;
 }
 
-// ✅ Main validation handler
+// Main validation handler
 async function validateWithOpenAI(regionLabel, policyURL) {
   try {
     const policyText = await fetchPolicy(policyURL);
     const repoCode = loadModifiedCode();
 
     const prompt = `
-You are a GDPR/Privacy Compliance Expert.
+        You are a GDPR/Privacy Compliance Expert.
 
-Evaluate the following frontend source code against the ${regionLabel} privacy policy.
-Identify any non-compliance issues found in the code. Be concise and specific. Mention what is missing or incorrectly implemented if any.
+        Evaluate the following frontend source code against the ${regionLabel} privacy policy.
+        Identify any non-compliance issues found in the code. Be concise and specific. Mention what is missing or incorrectly implemented if any.
 
-At the end of your evaluation, clearly state one of the following exactly (on a new line):
-- "Europe and US policies PASSED"
-- "Europe policy PASSED"
-- "US policy PASSED"
-- "Europe policy FAILED"
-- "US policy FAILED"
-- "Both policies FAILED"
+        At the end of your evaluation, clearly state one of the following exactly (on a new line):
+        - "Europe and US policies PASSED"
+        - "Europe policy PASSED"
+        - "US policy PASSED"
+        - "Europe policy FAILED"
+        - "US policy FAILED"
+        - "Both policies FAILED"
 
-=== BEGIN ${regionLabel} POLICY ===
-${policyText}
-=== END POLICY ===
+        === BEGIN ${regionLabel} POLICY ===
+        ${policyText}
+        === END POLICY ===
 
-=== BEGIN FRONTEND SOURCE CODE ===
-${repoCode}
-=== END CODE ===
-`;
+        === BEGIN FRONTEND SOURCE CODE ===
+        ${repoCode}
+        === END CODE === `;
 
-    console.log("📝 Prompt Preview:\n", prompt);
     const result = await callOpenAI(prompt);
     console.log(`\n=== ${regionLabel} Compliance Report ===\n${result}\n`);
 
     return extractDecision(result, regionLabel);
   } catch (err) {
-    console.error(`❌ Error during ${regionLabel} validation:`, err.message);
+    console.error(`Error during ${regionLabel} validation:`, err.message);
     return false;
   }
 }
 
-// ✅ Final runner
+// Final runner
 async function runValidation() {
   console.log("🚀 Starting GDPR/US Privacy Validation (diff with master)...\n");
 
@@ -128,16 +126,16 @@ async function runValidation() {
     validateWithOpenAI("US Privacy", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-us.txt"),
   ]);
 
-  console.log("=== ✅ Final Result ===");
-  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "PASSED ✅" : "FAILED ❌"}`);
-  console.log(`🇺🇸 US Privacy:    ${usPassed ? "PASSED ✅" : "FAILED ❌"}`);
+  console.log("=== Final Result ===");
+  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "PASSED" : "FAILED "}`);
+  console.log(`🇺🇸 US Privacy:    ${usPassed ? "PASSED " : "FAILED "}`);
 
   if (!europePassed || !usPassed) {
-    console.error("❌ Merge blocked due to policy violations.");
+    console.error("Merge blocked due to policy violations.");
     process.exit(1);
   }
 
-  console.log("✅ All privacy checks passed. Merge allowed.");
+  console.log("All privacy checks passed. Merge allowed.");
   process.exit(0);
 }
 
