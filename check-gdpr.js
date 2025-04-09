@@ -119,7 +119,7 @@ async function validateWithOpenAI(regionLabel, policyURL) {
 
 // Final runner
 async function runValidation() {
-  console.log("🚀 Starting GDPR/US Privacy Validation (diff with master)...\n");
+  console.log("Starting GDPR/US Privacy Validation (diff with master)...\n");
 
   const [europePassed, usPassed] = await Promise.all([
     validateWithOpenAI("Europe (GDPR)", "https://raw.githubusercontent.com/Sureshbalakrishnann/gdpr/master/policies/gdpr-europe.txt"),
@@ -127,8 +127,8 @@ async function runValidation() {
   ]);
 
   console.log("=== Final Result ===");
-  console.log(`🇪🇺 Europe (GDPR): ${europePassed ? "PASSED" : "FAILED "}`);
-  console.log(`🇺🇸 US Privacy:    ${usPassed ? "PASSED " : "FAILED "}`);
+  console.log(`Europe (GDPR): ${europePassed ? "PASSED" : "FAILED "}`);
+  console.log(`US Privacy:    ${usPassed ? "PASSED " : "FAILED "}`);
 
   if (!europePassed || !usPassed) {
     console.error("Merge blocked due to policy violations.");
